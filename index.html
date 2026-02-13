@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CiberQuest - AECastroDaire</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --bg: #0f172a; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); padding: 2rem; border-radius: 24px; width: 90%; max-width: 500px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        h1 { font-family: 'Orbitron', sans-serif; color: var(--secondary); font-size: 1.5rem; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid #475569; background: #1e293b; color: white; }
+        .btn { background: linear-gradient(90deg, var(--primary), var(--secondary)); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .progress-bar { width: 100%; height: 8px; background: #334155; border-radius: 4px; margin: 20px 0; }
+        #progress { height: 100%; background: var(--secondary); width: 0%; border-radius: 4px; transition: 0.4s; }
+        .option { background: rgba(255,255,255,0.07); border: 1px solid #475569; padding: 12px; margin: 8px 0; border-radius: 10px; cursor: pointer; text-align: left; transition: 0.2s; }
+        .option:hover { background: rgba(255,255,255,0.2); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="login">
+        <h1>🛡️ CIBERQUEST</h1>
+        <p>TIC - Professora Célia Reis</p>
+        <input type="email" id="email" placeholder="Teu E-mail Institucional" required>
+        <select id="turma">
+            <option value="6ºA">Turma 6ºA</option>
+            <option value="6ºD">Turma 6ºD</option>
+            <option value="6ºE">Turma 6ºE</option>
+        </select>
+        <button class="btn" onclick="start()">ENTRAR NO JOGO</button>
+    </div>
+
+    <div id="game" class="hidden">
+        <div id="score-val" style="color: var(--secondary); font-weight: bold;">PONTOS: 0</div>
+        <div class="progress-bar"><div id="progress"></div></div>
+        <h3 id="question-text"></h3>
+        <div id="options-box"></div>
+    </div>
+
+    <div id="end" class="hidden">
+        <h1>🏆 MISSÃO CONCLUÍDA</h1>
+        <p id="final-res"></p>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Os teus dados foram enviados para a folha de cálculo da professora.</p>
+        <button class="btn" onclick="location.reload()">RELOGAR</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "Recebes um link com skins grátis. O que fazes?", a: ["Clico logo", "Apago e aviso que é SCAM", "Mando para amigos"], c: 1 },
+        { q: "Qual senha é mais segura?", a: ["123456", "admin", "P@ss_Castro26!"], c: 2 },
+        { q: "Alguém estranho pede para ligar a webcam. Tu:", a: ["Ligo", "Bloqueio e denuncio", "Peço para ver a cara dele"], c: 1 },
+        { q: "O Wi-Fi aberto do shopping é seguro?", a: ["Sim", "Não, os dados podem ser roubados", "Só se for rápido"], c: 1 },
+        { q: "O que é Phishing?", a: ["Pescar no Paiva", "E-mails que roubam senhas", "Um tipo de monitor"], c: 1 },
+        { q: "Partilhar localização real é:", a: ["Fixe", "Perigoso", "Obrigatório"], c: 1 },
+        { q: "O que é a Pegada Digital?", a: ["O rasto que deixas online", "O tamanho do sapato", "Um vírus"], c: 0 },
+        { q: "Programas piratas trazem:", a: ["Velocidade", "Vírus/Malware", "Sorte"], c: 1 },
+        { q: "A 2FA serve para:", a: ["Net mais rápida", "Segurança extra na conta", "Ter duas contas"], c: 1 },
+        { q: "Notícia sem fonte oficial é:", a: ["Fake News provável", "Sempre verdade", "Segredo"], c: 0 },
+        { q: "Cadeado no browser significa:", a: ["Site oficial", "Ligação encriptada", "Site sem vírus"], c: 1 },
+        { q: "Quem deve saber a tua senha?", a: ["Amigos", "Tu e os teus pais", "Ninguém"], c: 1 },
+        { q: "Fazer Cyberbullying é:", a: ["Brincadeira", "Crime com consequências", "Normal"], c: 1 },
+        { q: "Anexo de e-mail estranho:", a: ["Abro", "Apago sem abrir", "Guardo"], c: 1 },
+        { q: "Perfil de rede social deve ser:", a: ["Público", "Privado", "Aberto"], c: 1 },
+        { q: "Cavalo de Troia é:", a: ["Bónus", "Vírus disfarçado", "Hardware"], c: 1 },
+        { q: "Sentiste desconforto online:", a: ["Continuas", "Bloqueias e pedes ajuda", "Finges"], c: 1 },
+        { q: "Denunciar perigos online à:", a: ["Polícia/Escola/Pais", "YouTube", "TikTok"], c: 0 },
+        { q: "Usar a mesma senha em tudo é:", a: ["Seguro", "Muito arriscado", "Prático"], c: 1 },
+        { q: "A segurança digital depende de:", a: ["Software apenas", "Ti e dos teus cuidados", "Da sorte"], c: 1 }
+    ];
+
+    let current = 0, score = 0, userEmail = "", userTurma = "";
+
+    function start() {
+        userEmail = document.getElementById("email").value;
+        userTurma = document.getElementById("turma").value;
+        if(!userEmail.includes("@")) return alert("E-mail inválido!");
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("game").classList.remove("hidden");
+        render();
+    }
+
+    function render() {
+        const q = questions[current];
+        document.getElementById("question-text").innerText = (current+1) + ". " + q.q;
+        document.getElementById("progress").style.width = (current/questions.length*100) + "%";
+        const box = document.getElementById("options-box");
+        box.innerHTML = "";
+        q.a.forEach((opt, i) => {
+            const b = document.createElement("div");
+            b.className = "option";
+            b.innerText = opt;
+            b.onclick = () => {
+                if(i === q.c) score += 5;
+                current++;
+                if(current < questions.length) render();
+                else sendData();
+            };
+            box.appendChild(b);
+        });
+        document.getElementById("score-val").innerText = "PONTOS: " + score;
+    }
+
+    function sendData() {
+        document.getElementById("game").classList.add("hidden");
+        document.getElementById("end").classList.remove("hidden");
+        document.getElementById("final-res").innerText = `Concluíste com ${score} pontos!`;
+
+        const formID = "1FAIpQLSesdBr2_sE4T4AlgrbGD3zAvecah3YeVxpZpHzTMWCbKf7AHw";
+        // NOTA: Precisa confirmar os IDs de entrada (entry.xxxx) do seu formulário específico
+        const url = `https://docs.google.com/forms/d/e/${formID}/formResponse?emailAddress=${encodeURIComponent(userEmail)}&entry.COLOCAR_ID_TURMA=${encodeURIComponent(userTurma)}&entry.COLOCAR_ID_SCORE=${score}&submit=Submit`;
+        
+        fetch(url, { mode: 'no-cors' });
+    }
+</script>
+</body>
+</html>
